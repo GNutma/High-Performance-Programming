@@ -1,0 +1,206 @@
+# To add a new cell, type '# %%'
+# To add a new markdown cell, type '# %% [markdown]'
+# %% [markdown]
+# # Opdracht 1.1: Complexiteit van sorteren
+
+# %%
+import numpy as np
+import pandas as pd
+from typing import List
+import time
+import sys  
+sys.setrecursionlimit(5000)
+
+# %% [markdown]
+# ### Selection sort<br>
+# Selection sort is een simpel, maar inefficient sorteeralgoritme. Als je een lijst probeert te sorteren in oplopende volgorde, moet het eerste element altijd het kleinste element zijn. In de eerste iteratie van selection sort selecteert het het kleinste element in de array en verwisselt deze met het eerste element van de array. De tweede iteratie selecteert het tweede kleinste item (deze is kleiner dan alle overige items in de array) en verwisselt deze met het tweede item van de array. Het algoritme gaat zo door tot het in de laatste iteratie het een-na-grootste element van de array met het item op de een-na-laatste plek van de array verwisselt.
+# 
+# Hieronder Voorbeeld van document twee implementaties van selection sort in Python:
+
+# %%
+def selection_sort(data: List[int]) -> None:
+    """Sort an array using selection sort"""
+    # loop over len(data) -1 elements
+    for index1 in range(len(data)-1):
+        smallest = index1 # first index of remaining array
+
+        # loop to find index of smallest element
+        for index2 in range(index1 + 1, len(data)):
+            if data[index2] < data[smallest]:
+                smallest = index2
+
+        # swap smallest element into position
+        data[smallest], data[index1] = data[index1], data[smallest]
+
+
+def recursive_selection_sort(data: List[int]) -> None:
+    # Lists with less than one element are sorted
+    if len(data) <= 1:
+        return data
+    else:
+        smallest = min(data)    # find the smallest element in the list
+        data.remove(smallest)   # remove from the list
+        return [smallest] + recursive_selection_sort(data) # put on front of to be sorted remainder
+
+# %% [markdown]
+# ## Insertion Sort
+# 
+# Insertion sort is een ander simpel, maar inefficient sorteeralgoritme. In de eerste iteratie van dit algoritme neemt het het tweede element van de array en verwisselt dit met het eerste element als het kleiner is dan het eerste element. In de tweede iteratie bekijkt het het derde element, en plaatst dit (insert) op de juiste plek tussen de eerste twee elementen. De eerste drie elementen zijn nu gesorteerd. Dit blijft het doen tot het alle overige elementen van de array heeft bekeken en op de juiste plek heeft gezet.
+# 
+# HieronderVoorbeeld van document twee implementaties van insertion sort in Python:
+
+# %%
+def insertion_sort(data: List[int]) -> None:
+    """Sorting an array in place using insertion sort."""
+    # loop over len(data) - 1 elements
+    for next in range(1, len(data)):
+        insert = data[next] # value to insert
+        move_item = next    # location to place element
+
+        # search for place to put current element
+        while move_item > 0 and data[move_item - 1] > insert:
+            # shift element right one slot
+            data[move_item] = data[move_item - 1]
+            move_item -= 1
+
+        data[move_item] = insert # place inserted element
+
+def recursive_insertion_sort(toSort: List[int], sorted: List[int] = []) -> List[int]:
+    """Recursive implementation of insertion sort"""
+    if len(toSort) == 0: # empty lists are sorted
+        return sorted
+    else:
+        head, *tail = toSort
+        sorted = recursive_insertion(head, sorted) # insert the head into the sorted list
+        return recursive_insertion_sort(tail, sorted) # recursive call to sort the remainder
+
+
+def recursive_insertion(element: int, data: List[int]) -> List[int]:
+    """Assistant function to recursive insertion sort; recursively insert into a list"""
+    if len(data) == 0: # if the list is empty, the element should be place there anyway
+        return [element]
+    else:
+        head, *tail = data
+        if element < head: # when the element is smaller than the head of the insertion list
+            return [element, head] + tail # place it on the front
+        else:
+            return [head] + recursive_insertion(element, tail) # else, keep the head separate, and recursively insert into the tail
+
+# %% [markdown]
+# ## Merge Sort
+# Merge sort is een efficient sorteeralgoritme, maar is conceptueel complexer om te begrijpen dan selection sort of insertion sort. Het merge sort algoritme sorteert door de array te splitsen in twee (ongeveer) evengrote subarrays. Het sorteert beide subarrays, en voegt ze dan samen in één grote array. De lastigheid zit natuurlijk in het samenvoegen. Neem aan dat het algoritme twee kleiner arrays heeft gesorteerd: 
+# 
+#  array1: 14  30  34  56  77
+#  array2: 15  20  51  52  93
+# Merge sort combineert deze twee arrays tot één grote, gesorteerde array. Het neemt daarvoor het kleinste element van het begin van beide subarrays, en plaatst dat in de resultaat array; dit herhaalt het tot beide subarrays leeg zijn. In het bovenstaande voorbeeld, neemt het dus eerst 14 uit array1, dan 15 uit array2, dan 20 uit array2, dan 30 uit array1, etc.
+# 
+# De recursieve implementatie van merge sort in Python vindt je hieronderVoorbeeld van document:
+
+# %%
+def merge_sort(xs: List[int]) -> None:
+    """In place merge sort of array without recursive. The basic idea
+    is to avoid the recursive call while using iterative solution.
+    The algorithm first merge chunk of length of 2, then merge chunks
+    of length 4, then 8, 16, .... , until 2^k where 2^k is large than
+    the length of the array
+    """
+
+    unit = 1
+    while unit <= len(xs):
+        h = 0
+        for h in range(0, len(xs), unit * 2):
+            l, r = h, min(len(xs), h + 2 * unit)
+            mid = h + unit
+            # merge xs[h:h + 2 * unit]
+            p, q = l, mid
+            while p < mid and q < r:
+                # use <= for stable merge merge
+                if xs[p] <= xs[q]:
+                    p += 1
+                else:
+                    tmp = xs[q]
+                    xs[p + 1: q + 1] = xs[p:q]
+                    xs[p] = tmp
+                    p, mid, q = p + 1, mid + 1, q + 1
+
+        unit *= 2
+def merge_arrays(array1: List[int], array2: List[int]) -> List[int]:
+    """Recursively merge two arrays into one sorted array"""
+    if len(array1) == len(array2) == 0: # done when both arrays are empty
+        return []
+    else:
+        if len(array1) == 0: # if either array is empty
+            head, *tail = array2
+            return [head] + merge_arrays(array1, tail) # merge the remainder of the non-empty list
+        elif len(array2) == 0: # idem for the other array
+            head, *tail = array1
+            return [head] + merge_arrays(tail, array2)
+        else: # when both still have elements
+            head1, *tail1 = array1
+            head2, *tail2 = array2
+            if head1 < head2: # select the smallest
+                return [head1] + merge_arrays(tail1, array2) # and merge with the remainder
+            else:
+                return [head2] + merge_arrays(array1, tail2) # idem for when array 2 had the smaller element
+
+def recursive_merge_sort(data: List[int]) -> List[int]:
+    """Recursive merge sort implementation for sorting arrays"""
+    if len(data) == 1: # arrays with 1 element are sorted
+        return data
+    else:
+        middle = int(len(data)/2) # find the middle (round down if len(data) is odd)
+        first, second = data[:middle], data[middle:] # split the list in half
+        return merge_arrays(recursive_merge_sort(first), recursive_merge_sort(second)) # merge_sort both arrays, and merge them into the result
+
+# %% [markdown]
+# ## Opdrachten
+# 1. Maak een tabel met de meetwaarden van de volgende tests (schrijf de benodigde code om deze tests uit te kunnen voeren):<br>
+# - Genereer random lijsten van lengtes 1'000, 10'000 en 30'000 items. Hoe lang heeft elk algoritme nodig om deze te sorteren?<br>
+# - Genereer een (gesorteerde) lijst van 30'000 items. Hoe lang heeft elk algoritme nodig om deze te sorteren?<br>
+# - Draai de gesorteerde lijst van 30'000 items van de vorige vraag achterstevoren (list.reverse()). Hoe lang heeft elk algoritme nodig om deze te sorteren?<br>
+# **Tip**: gebruik de iteratieve versies, want anders krijg je stack overflows!
+# 2. Bekijk / bepaal aan de hand van de algoritmes (en beschrijvingen) hierboven, wat de theoretische run time efficiëntie (Big O) van elk van deze  algoritmes is. Bepaal hiervoor 'best case', 'worst case' en 'average case' run time efficiëntie.
+# 3. Maakt het voor de complexiteit (Big O) van een algoritme uit of je een iteratieve of een recursieve versie beschouwd?
+
+# %%
+np.random.seed(seed=420)
+lst_1 = np.random.randint(low=1, high=1000, size=1000).tolist()
+lst_2 = np.random.randint(low=1, high=1000, size=10000).tolist()
+lst_3 = np.random.randint(low=1, high=1000, size=30000).tolist()
+
+def timer(func,*args):
+    start = time.time()
+    ret = func(*args)
+    end = time.time()
+    return (ret, end-start)
+
+def measure(func,lst_, n=1):
+    lst = lst_.copy()
+    l = np.zeros(n)
+    for i in range(n):
+        l[i] = timer(func,lst)[1]
+    return l.mean()
+d = {}
+for l in [(1000,lst_1),(10000,lst_2),(30000,lst_3)]:
+    print(f"Random list(n={l[0]})")
+    for func in [selection_sort, recursive_selection_sort,insertion_sort,recursive_insertion_sort,merge_sort,recursive_merge_sort]:
+        d[f"{func.__name__}_{l[0]}"] = measure(func,l[1])
+        print(f"  {func.__name__}_{l[0]}",d.get(f"{func.__name__}_{l[0]}"))
+    print()
+
+
+# %%
+data = {"Random list(n=1000)":[d.get("selection_sort_1000"),d.get("recursive_selection_sort_1000"),d.get("insertion_sort_1000"),
+                                d.get("recursive_insertion_sort_1000"),d.get("merge_sort_1000"),d.get("recursive_merge_sort_1000")],
+        "Random list(n=10000)":[d.get("selection_sort_10000"),d.get("recursive_selection_sort_10000"),d.get("insertion_sort_10000"),
+                                d.get("recursive_insertion_sort_10000"),d.get("merge_sort_10000"),d.get("recursive_merge_sort_10000")],
+        "Random list(n=30000)":[d.get("selection_sort_30000"),d.get("recursive_selection_sort_30000"),d.get("insertion_sort_30000"),
+                                d.get("recursive_insertion_sort_30000"),d.get("merge_sort_30000"),d.get("recursive_merge_sort_30000")]}
+
+pd.DataFrame.from_dict(data, orient='index',columns=["selection_sort", "recursive_selection_sort",
+                    "insertion_sort","recursive_insertion_sort","merge_sort","recursive_merge_sort"])
+
+
+# %%
+
+
