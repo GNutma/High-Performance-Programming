@@ -1,0 +1,19 @@
+.\arraySum 10k.txt
+
+    The sum of the values in the input file '10k.txt' is 5.02217e+009
+    Elasped time = 0.000000 sec
+
+.\arraySum 100k.txt
+
+    The sum of the values in the input file '100k.txt' is 4.98715e+010
+    Elasped time = 0.000000 sec
+
+.\arraySum 1m.txt  
+
+    The sum of the values in the input file '1m.txt' is 5.00311e+011
+    Elasped time = 0.004000 sec
+
+.\arraySum 10m.txt
+
+    The sum of the values in the input file '10m.txt' is 4.99945e+012
+    Elasped time = 0.022000 sec
